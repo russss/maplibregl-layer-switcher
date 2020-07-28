@@ -53,17 +53,16 @@ import URLHash from '@russss/mapboxgl-layer-switcher/urlhash';
 const url_hash = new URLHash(layer_switcher);
 ```
 
-When creating the map, you need to merge the result of `url_hash.getPosition()` with the map options, and then
-call `url_hash.enable` on the map:
-
+When creating the map, you need to call `url_hash.init`, passing in your default map options. The URLHash class will
+update the `zoom` and `center` options if they're provided in the URL hash. Then call `url_hash.enable` on the map:
 ```javascript
-var map = new mapboxgl.Map(Object.assign({
+var map = new mapboxgl.Map(url_hash.init({
 	container: 'map',
 	style: style,
 	minZoom: 2,
 	maxZoom: 17.9,
 	center: [12, 26],
-}, url_hash.getPosition()));
+}));
 
 url_hash.enable(map);
 ```

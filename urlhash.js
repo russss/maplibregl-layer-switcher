@@ -93,16 +93,14 @@ class URLHash {
     return hash;
   }
 
-  getPosition() {
+  init(options) {
+    options['hash'] = false;
     const loc = window.location.hash.replace('#', '').split('/');
     if (loc.length >= 3) {
-      return {
-        hash: false,
-        center: [+loc[2], +loc[1]],
-        zoom: +loc[0],
-      };
+      options['center'] = [+loc[2], +loc[1]];
+      options['zoom'] = +loc[0];
     }
-    return {hash: false};
+    return options;
   }
 };
 
