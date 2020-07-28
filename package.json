@@ -1,0 +1,16 @@
+{
+  "name": "@russss/mapboxgl-layer-switcher",
+  "version": "1.0.0",
+  "description": "Layer switcher for Mapbox GL JS based on layer prefixes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Russ Garrett",
+  "license": "ISC",
+  "dependencies": {
+    "lodash.invert": "^4.3.0",
+    "lodash.isequal": "^4.5.0",
+    "redom": "^3.24.2"
+  }
+}
