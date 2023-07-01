@@ -1,20 +1,30 @@
-import {el, text} from 'redom';
+import {el} from 'redom';
 import invert from 'lodash.invert';
 import isEqual from 'lodash.isequal';
 import './layerswitcher.css';
+import URLHash from './urlhash';
+import type maplibregl from 'maplibre-gl';
 
 class LayerSwitcher {
-  constructor(layers, default_visible = []) {
+  _layers: Record<string, string>
+  _identifiers: Record<string, string>
+  _default_visible: Array<string>
+  _container: any
+  _visible: Array<string>
+  _map: maplibregl.Map | undefined
+  urlhash: URLHash | undefined
+
+  constructor(layers: Record<string, string>, default_visible = []) {
     this._layers = layers;
     this._identifiers = this._initLayerIdentifiers();
     this._default_visible = default_visible;
-    this._container = el('div', {class: 'mapboxgl-ctrl layer-switcher-list'});
+    this._container = el('div', {class: 'maplibregl-ctrl layer-switcher-list'});
     this._container.appendChild(el('h3', 'Layers'));
     this._visible = [...default_visible];
   }
 
   _initLayerIdentifiers() {
-    let identifiers = {};
+    let identifiers: Record<string, string> = {};
     Object.keys(this._layers)
       .sort()
       .forEach(layer_name => {
@@ -30,7 +40,7 @@ class LayerSwitcher {
   }
 
   _getLayerIdentifiers() {
-    let identifiers = [];
+    let identifiers: Array<string> = [];
     let id_map = invert(this._identifiers);
     this._visible.sort().forEach(layer_name => {
       identifiers.push(id_map[layer_name]);
@@ -39,6 +49,10 @@ class LayerSwitcher {
   }
 
   _updateVisibility() {
+    if (!this._map) {
+      return;
+    }
+
     var layers = this._map.getStyle().layers;
     for (let layer of layers) {
       let name = layer['id'];
@@ -58,11 +72,13 @@ class LayerSwitcher {
     }
   }
 
-  setInitialVisibility(style) {
-    /**
-     * Modify a map style before adding to the map to set initial visibility states.
-     * This prevents flash-of-invisible-layers.
-     */
+  /**
+   * Modify a MapLibre GL style object before creating the map to set initial visibility states.
+   * This prevents flash-of-invisible-layers.
+   * 
+   * @param style the MapLibre GL style object to modify
+   */
+  setInitialVisibility(style: maplibregl.StyleSpecification) {
     for (let layer of style['layers']) {
       for (let layer_name in this._layers) {
         let pref = this._layers[layer_name];
@@ -70,7 +86,7 @@ class LayerSwitcher {
           layer['id'].startsWith(pref) &&
           !this._visible.includes(layer['id'])
         ) {
-          if (!('layout' in layer)) {
+          if (!layer['layout']) {
             layer['layout'] = {};
           }
           layer['layout']['visibility'] = 'none';
@@ -86,7 +102,7 @@ class LayerSwitcher {
     return null;
   }
 
-  setURLString(string) {
+  setURLString(string: string) {
     if (string) {
       const ids = string.split(',');
       if (ids.length == 0) {
@@ -102,7 +118,7 @@ class LayerSwitcher {
     } 
   }
 
-  onAdd(map) {
+  onAdd(map: maplibregl.Map) {
     this._map = map;
     if (map.isStyleLoaded()) {
       this._updateVisibility();
@@ -114,7 +130,7 @@ class LayerSwitcher {
     this._createList();
 
     const wrapper = el('div', {
-      class: 'mapboxgl-ctrl mapboxgl-ctrl-group layer-switcher',
+      class: 'maplibregl-ctrl maplibregl-ctrl-group layer-switcher',
     });
     wrapper.appendChild(this._container);
     wrapper.onmouseover = e => {
@@ -138,7 +154,7 @@ class LayerSwitcher {
       let label = el('label', name, {for: 'layer' + i});
 
       checkbox.onchange = e => {
-        if (e.target.checked) {
+        if ((<HTMLInputElement>e.target).checked) {
           this._visible.push(name);
         } else {
           this._visible = this._visible.filter(item => item !== name);
@@ -154,4 +170,4 @@ class LayerSwitcher {
   }
 }
 
-export {LayerSwitcher as default};
+export default LayerSwitcher;

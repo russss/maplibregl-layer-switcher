@@ -1,13 +1,17 @@
+import LayerSwitcher from './index';
+import type maplibregl from 'maplibre-gl';
 
 
 class URLHash {
+  layerSwitcher: LayerSwitcher
+  _map: maplibregl.Map | undefined
 
-  constructor(layerSwitcher) {
+  constructor(layerSwitcher: LayerSwitcher) {
     this.layerSwitcher = layerSwitcher;
     this._onHashChange();
   }
 
-  enable(map) {
+  enable(map: maplibregl.Map) {
     this._map = map;
     map.on('moveend', () => {
       this._updateHash();
@@ -37,7 +41,7 @@ class URLHash {
         let matches = component.match(/([a-z])=(.*)/);
         if (matches) {
           if (matches[1] == 'm') {
-            markerString = matches[2];
+            //markerString = matches[2];
           } else {
             return false;
           }
@@ -69,6 +73,9 @@ class URLHash {
   }
 
   getHashString() {
+    if (!this._map) {
+      throw new Error('getHashString called before map initialised');
+    }
     const center = this._map.getCenter(),
       zoom = Math.round(this._map.getZoom() * 100) / 100,
       // derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
@@ -80,6 +87,7 @@ class URLHash {
       lat = Math.round(center.lat * m) / m,
       bearing = this._map.getBearing(),
       pitch = this._map.getPitch();
+    
     let hash = `#${zoom}/${lat}/${lng}`;
     let layers = null;
 
@@ -93,7 +101,14 @@ class URLHash {
     return hash;
   }
 
-  init(options) {
+  /**
+   * Modify MapLibre GL map constructor options to include values from the URL hash.
+   * 
+   * @param options the original options passed to the MapLibre GL `Map` constructor.
+   *      You should include defaults for the center and zoom parameters.
+   * @returns an options object to be passed to the `Map` constructor.
+   */
+  init(options: any) {
     options['hash'] = false;
     const loc = window.location.hash.replace('#', '').split('/');
     if (loc.length >= 3) {

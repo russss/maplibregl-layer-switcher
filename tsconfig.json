@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "target": "es2016",
+    "module": "es2015",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "outDir": "lib",
+    "moduleResolution": "node"
+  },
+  "include": [
+    "src"
+  ]
+}
