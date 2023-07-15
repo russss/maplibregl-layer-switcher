@@ -1,4 +1,4 @@
-import {el, mount} from 'redom';
+import { el, mount } from 'redom';
 import invert from 'lodash.invert';
 import isEqual from 'lodash.isequal';
 import './layerswitcher.css';
@@ -6,20 +6,20 @@ import URLHash from './urlhash';
 import type maplibregl from 'maplibre-gl';
 
 class LayerSwitcher implements maplibregl.IControl {
-  _layers: Record<string, string>
-  _identifiers: Record<string, string>
-  _default_visible: Array<string>
-  _container: HTMLElement
-  _visible: Array<string>
-  _map: maplibregl.Map | undefined
-  urlhash: URLHash | undefined
+  _layers: Record<string, string>;
+  _identifiers: Record<string, string>;
+  _default_visible: Array<string>;
+  _container: HTMLElement;
+  _visible: Array<string>;
+  _map: maplibregl.Map | undefined;
+  urlhash: URLHash | undefined;
 
   constructor(layers: Record<string, string>, default_visible: Array<string> = []) {
     this._layers = layers;
     this._identifiers = this._initLayerIdentifiers();
     this._default_visible = default_visible;
     this._container = el('div', { class: 'layer-switcher-list' });
-    mount(document.body, this._container)
+    mount(document.body, this._container);
     this._container.appendChild(el('h3', 'Layers'));
     this._visible = [...default_visible];
   }
@@ -28,7 +28,7 @@ class LayerSwitcher implements maplibregl.IControl {
     let identifiers: Record<string, string> = {};
     Object.keys(this._layers)
       .sort()
-      .forEach(layer_name => {
+      .forEach((layer_name) => {
         let size = 1;
         let ident = null;
         do {
@@ -43,7 +43,7 @@ class LayerSwitcher implements maplibregl.IControl {
   _getLayerIdentifiers() {
     let identifiers: Array<string> = [];
     let id_map = invert(this._identifiers);
-    this._visible.sort().forEach(layer_name => {
+    this._visible.sort().forEach((layer_name) => {
       identifiers.push(id_map[layer_name]);
     });
     return identifiers;
@@ -76,17 +76,14 @@ class LayerSwitcher implements maplibregl.IControl {
   /**
    * Modify a MapLibre GL style object before creating the map to set initial visibility states.
    * This prevents flash-of-invisible-layers.
-   * 
+   *
    * @param style the MapLibre GL style object to modify
    */
   setInitialVisibility(style: maplibregl.StyleSpecification) {
     for (let layer of style['layers']) {
       for (let layer_name in this._layers) {
         let pref = this._layers[layer_name];
-        if (
-          layer['id'].startsWith(pref) &&
-          !this._visible.includes(layer['id'])
-        ) {
+        if (layer['id'].startsWith(pref) && !this._visible.includes(layer['id'])) {
           if (!layer['layout']) {
             layer['layout'] = {};
           }
@@ -100,7 +97,7 @@ class LayerSwitcher implements maplibregl.IControl {
     if (!isEqual(this._visible.sort(), this._default_visible.sort())) {
       return this._getLayerIdentifiers().join(',');
     }
-    return "";
+    return '';
   }
 
   setURLString(string: string) {
@@ -109,14 +106,14 @@ class LayerSwitcher implements maplibregl.IControl {
       if (ids.length == 0) {
         this._visible = [...this._default_visible];
       } else {
-        this._visible = ids.map(id => this._identifiers[id]).filter(id => id);
+        this._visible = ids.map((id) => this._identifiers[id]).filter((id) => id);
       }
     } else {
       this._visible = [...this._default_visible];
     }
     if (this._map) {
       this._updateVisibility();
-    } 
+    }
   }
 
   onAdd(map: maplibregl.Map) {
@@ -132,21 +129,21 @@ class LayerSwitcher implements maplibregl.IControl {
 
     const button = el('button', {
       class: 'layer-switcher-button',
-      'aria-label': 'Layer Switcher'
+      'aria-label': 'Layer Switcher',
     });
-    button.onmouseover = e => {
+    button.onmouseover = (e) => {
       var button_position = button.getBoundingClientRect();
       this._container.style.top = button_position.top + 'px';
-      this._container.style.right = (document.documentElement.clientWidth - button_position.right) + 'px';
+      this._container.style.right = document.documentElement.clientWidth - button_position.right + 'px';
       this._container.style.display = 'block';
     };
-    this._container.onmouseleave = e => {
+    this._container.onmouseleave = (e) => {
       this._container.style.display = 'none';
     };
-    
+
     return el('div', button, {
       class: 'maplibregl-ctrl maplibregl-ctrl-group layer-switcher',
-    })
+    });
   }
 
   onRemove() {
@@ -163,13 +160,13 @@ class LayerSwitcher implements maplibregl.IControl {
         id: 'layer' + i,
         checked: this._visible.includes(name),
       });
-      let label = el('label', name, {for: 'layer' + i});
+      let label = el('label', name, { for: 'layer' + i });
 
-      checkbox.onchange = e => {
+      checkbox.onchange = (e) => {
         if ((<HTMLInputElement>e.target).checked) {
           this._visible.push(name);
         } else {
-          this._visible = this._visible.filter(item => item !== name);
+          this._visible = this._visible.filter((item) => item !== name);
         }
         this._updateVisibility();
       };
