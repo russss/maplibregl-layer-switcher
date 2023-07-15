@@ -1,13 +1,13 @@
 import LayerSwitcher from './index';
 import type maplibregl from 'maplibre-gl';
 
-interface HashComponents {
+export interface HashComponents {
   zoom?: number,
   center?: [number, number],
   layers?: string,
 }
 
-function decodeHash(hash: string): HashComponents {
+export function decodeHash(hash: string): HashComponents {
   const loc = hash.replace('#', '').split('/')
   let result: HashComponents = {}
   if (loc.length < 3) {
@@ -28,6 +28,31 @@ function decodeHash(hash: string): HashComponents {
   }
 
   return result
+}
+
+export function encodeHash(components: HashComponents): string {
+  if (!components.zoom || !components.center) {
+    return ""
+  }
+
+  const zoom = Math.round(components.zoom * 100) / 100,
+  // derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
+  precision = Math.ceil(
+    (zoom * Math.LN2 + Math.log(512 / 360 / 0.5)) / Math.LN10,
+  ),
+  m = Math.pow(10, precision),
+  lng = Math.round(components.center[0] * m) / m,
+  lat = Math.round(components.center[1] * m) / m
+  // bearing = this._map.getBearing(),
+  // pitch = this._map.getPitch();
+
+  let hash = `#${zoom}/${lat}/${lng}`;
+
+  if (components.layers) {
+    hash += '/' + components.layers;
+  }
+
+  return hash;
 }
 
 
@@ -86,29 +111,17 @@ class URLHash {
     if (!this._map) {
       throw new Error('getHashString called before map initialised');
     }
-    const center = this._map.getCenter(),
-      zoom = Math.round(this._map.getZoom() * 100) / 100,
-      // derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
-      precision = Math.ceil(
-        (zoom * Math.LN2 + Math.log(512 / 360 / 0.5)) / Math.LN10,
-      ),
-      m = Math.pow(10, precision),
-      lng = Math.round(center.lng * m) / m,
-      lat = Math.round(center.lat * m) / m
-      // bearing = this._map.getBearing(),
-      // pitch = this._map.getPitch();
-    
-    let hash = `#${zoom}/${lat}/${lng}`;
-    let layers = null;
+
+    const { lng, lat } = this._map.getCenter(); 
+    const components: HashComponents = {
+      center: [lng, lat],
+      zoom: this._map.getZoom(),
+    }
 
     if (this.layerSwitcher) {
-      layers = this.layerSwitcher.getURLString();
+      components.layers = this.layerSwitcher.getURLString()
     }
-
-    if (layers) {
-      hash += '/' + layers;
-    }
-    return hash;
+    return encodeHash(components);
   }
 
   /**

@@ -100,7 +100,7 @@ class LayerSwitcher implements maplibregl.IControl {
     if (!isEqual(this._visible.sort(), this._default_visible.sort())) {
       return this._getLayerIdentifiers().join(',');
     }
-    return null;
+    return "";
   }
 
   setURLString(string: string) {
