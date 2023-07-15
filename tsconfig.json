@@ -7,7 +7,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "outDir": "lib",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+		"declaration": true,
+		"declarationMap": true
   },
   "include": [
     "src"
