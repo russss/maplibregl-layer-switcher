@@ -1,4 +1,4 @@
-import {el} from 'redom';
+import {el, mount} from 'redom';
 import invert from 'lodash.invert';
 import isEqual from 'lodash.isequal';
 import './layerswitcher.css';
@@ -18,7 +18,8 @@ class LayerSwitcher implements maplibregl.IControl {
     this._layers = layers;
     this._identifiers = this._initLayerIdentifiers();
     this._default_visible = default_visible;
-    this._container = el('div', {class: 'maplibregl-ctrl layer-switcher-list'});
+    this._container = el('div', { class: 'layer-switcher-list' });
+    mount(document.body, this._container)
     this._container.appendChild(el('h3', 'Layers'));
     this._visible = [...default_visible];
   }
@@ -129,17 +130,23 @@ class LayerSwitcher implements maplibregl.IControl {
     }
     this._createList();
 
-    const wrapper = el('div', {
-      class: 'maplibregl-ctrl maplibregl-ctrl-group layer-switcher',
+    const button = el('button', {
+      class: 'layer-switcher-button',
+      'aria-label': 'Layer Switcher'
     });
-    wrapper.appendChild(this._container);
-    wrapper.onmouseover = e => {
+    button.onmouseover = e => {
+      var button_position = button.getBoundingClientRect();
+      this._container.style.top = button_position.top + 'px';
+      this._container.style.right = (document.documentElement.clientWidth - button_position.right) + 'px';
       this._container.style.display = 'block';
     };
-    wrapper.onmouseout = e => {
+    this._container.onmouseleave = e => {
       this._container.style.display = 'none';
     };
-    return wrapper;
+    
+    return el('div', button, {
+      class: 'maplibregl-ctrl maplibregl-ctrl-group layer-switcher',
+    })
   }
 
   onRemove() {

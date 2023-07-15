@@ -1,6 +1,35 @@
 import LayerSwitcher from './index';
 import type maplibregl from 'maplibre-gl';
 
+interface HashComponents {
+  zoom?: number,
+  center?: [number, number],
+  layers?: string,
+}
+
+function decodeHash(hash: string): HashComponents {
+  const loc = hash.replace('#', '').split('/')
+  let result: HashComponents = {}
+  if (loc.length < 3) {
+    return result
+  }
+  result.layers = ''
+  result.zoom = +loc[0];
+  result.center = [+loc[2], +loc[1]];
+
+  for (let i = 3; i < loc.length; i++) {
+    let component = loc[i];
+    let matches = component.match(/([a-z])=(.*)/);
+    if (matches) {
+      // TODO: handle additional components
+    } else {
+      result.layers = component;
+    }
+  }
+
+  return result
+}
+
 
 class URLHash {
   layerSwitcher: LayerSwitcher
@@ -27,37 +56,18 @@ class URLHash {
   }
 
   _onHashChange() {
-    const loc = window.location.hash.replace('#', '').split('/');
-    if (loc.length >= 3) {
-      let layerString = "";
-      if (this._map) {
-        this._map.jumpTo({
-          center: [+loc[2], +loc[1]],
-          zoom: +loc[0],
-        });
-      }
-      for (let i = 3; i < loc.length; i++) {
-        let component = loc[i];
-        let matches = component.match(/([a-z])=(.*)/);
-        if (matches) {
-          if (matches[1] == 'm') {
-            //markerString = matches[2];
-          } else {
-            return false;
-          }
-        } else {
-          layerString = component;
-        }
-      }
-      if (this.layerSwitcher) {
-        this.layerSwitcher.setURLString(layerString);
-      }
-      return true;
+    const hash = decodeHash(window.location.hash);
+
+    if (hash.center && hash.zoom && this._map) {
+      this._map.jumpTo({
+        center: hash.center,
+        zoom: hash.zoom,
+      });
     }
-    if (this.layerSwitcher) {
-      this.layerSwitcher.setURLString("");
+
+    if (this.layerSwitcher && hash.layers !== undefined) {
+      this.layerSwitcher.setURLString(hash.layers);
     }
-    return false;
   }
 
   _updateHash() {
@@ -105,8 +115,9 @@ class URLHash {
    * Modify MapLibre GL map constructor options to include values from the URL hash.
    * 
    * @param options the original options passed to the MapLibre GL `Map` constructor.
-   *      You should include defaults for the center and zoom parameters.
-   * @returns an options object to be passed to the `Map` constructor.
+   *      You should include defaults for the `center` and `zoom` parameters.
+   * @returns an options object to be passed to the `Map` constructor, with the
+   *      `center` and `zoom` parameters updated if necessary. Other options are untouched.
    */
   init(options: maplibregl.MapOptions): maplibregl.MapOptions {
     options.hash = false;
