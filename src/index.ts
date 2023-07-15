@@ -5,16 +5,16 @@ import './layerswitcher.css';
 import URLHash from './urlhash';
 import type maplibregl from 'maplibre-gl';
 
-class LayerSwitcher {
+class LayerSwitcher implements maplibregl.IControl {
   _layers: Record<string, string>
   _identifiers: Record<string, string>
   _default_visible: Array<string>
-  _container: any
+  _container: HTMLElement
   _visible: Array<string>
   _map: maplibregl.Map | undefined
   urlhash: URLHash | undefined
 
-  constructor(layers: Record<string, string>, default_visible = []) {
+  constructor(layers: Record<string, string>, default_visible: Array<string> = []) {
     this._layers = layers;
     this._identifiers = this._initLayerIdentifiers();
     this._default_visible = default_visible;
@@ -140,6 +140,11 @@ class LayerSwitcher {
       this._container.style.display = 'none';
     };
     return wrapper;
+  }
+
+  onRemove() {
+    this._container.parentNode?.removeChild(this._container);
+    this._map = undefined;
   }
 
   _createList() {

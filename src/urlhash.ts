@@ -84,9 +84,9 @@ class URLHash {
       ),
       m = Math.pow(10, precision),
       lng = Math.round(center.lng * m) / m,
-      lat = Math.round(center.lat * m) / m,
-      bearing = this._map.getBearing(),
-      pitch = this._map.getPitch();
+      lat = Math.round(center.lat * m) / m
+      // bearing = this._map.getBearing(),
+      // pitch = this._map.getPitch();
     
     let hash = `#${zoom}/${lat}/${lng}`;
     let layers = null;
@@ -108,12 +108,12 @@ class URLHash {
    *      You should include defaults for the center and zoom parameters.
    * @returns an options object to be passed to the `Map` constructor.
    */
-  init(options: any) {
-    options['hash'] = false;
+  init(options: maplibregl.MapOptions): maplibregl.MapOptions {
+    options.hash = false;
     const loc = window.location.hash.replace('#', '').split('/');
     if (loc.length >= 3) {
-      options['center'] = [+loc[2], +loc[1]];
-      options['zoom'] = +loc[0];
+      options.center = [+loc[2], +loc[1]];
+      options.zoom = +loc[0];
     }
     return options;
   }
