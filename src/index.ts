@@ -1,4 +1,4 @@
-import { el, mount } from 'redom';
+import { list, List, RedomComponent, el, mount, s } from 'redom';
 import invert from 'lodash.invert';
 import isEqual from 'lodash.isequal';
 import './layerswitcher.css';
@@ -11,6 +11,7 @@ class LayerSwitcher implements maplibregl.IControl {
   _default_visible: Array<string>;
   _container: HTMLElement;
   _visible: Array<string>;
+  _layerList: List;
   _map: maplibregl.Map | undefined;
   urlhash: URLHash | undefined;
 
@@ -18,9 +19,10 @@ class LayerSwitcher implements maplibregl.IControl {
     this._layers = layers;
     this._identifiers = this._initLayerIdentifiers();
     this._default_visible = default_visible;
-    this._container = el('div', { class: 'layer-switcher-list' });
+
+    this._layerList = list('ul', LayerSwitcherItem, 'name');
+    this._container = el('div', [el('h3', 'Layers'), this._layerList], { class: 'layer-switcher-list' });
     mount(document.body, this._container);
-    this._container.appendChild(el('h3', 'Layers'));
     this._visible = [...default_visible];
   }
 
@@ -91,6 +93,7 @@ class LayerSwitcher implements maplibregl.IControl {
         }
       }
     }
+    this._updateList();
   }
 
   getURLString() {
@@ -111,9 +114,14 @@ class LayerSwitcher implements maplibregl.IControl {
     } else {
       this._visible = [...this._default_visible];
     }
-    if (this._map) {
+
+    // If the style hasn't been loaded yet, don't update visibility or this causes
+    // problems with the URLHash. Initial visibility is handled by the
+    // `setInitialVisibility` method.
+    if (this._map?.isStyleLoaded()) {
       this._updateVisibility();
     }
+    this._updateList();
   }
 
   onAdd(map: maplibregl.Map) {
@@ -125,7 +133,6 @@ class LayerSwitcher implements maplibregl.IControl {
         this._updateVisibility();
       });
     }
-    this._createList();
 
     const button = el('button', {
       class: 'layer-switcher-button',
@@ -151,31 +158,56 @@ class LayerSwitcher implements maplibregl.IControl {
     this._map = undefined;
   }
 
-  _createList() {
-    var list = el('ul');
-    var i = 0;
-    for (let name in this._layers) {
-      let checkbox = el('input', {
-        type: 'checkbox',
-        id: 'layer' + i,
-        checked: this._visible.includes(name),
-      });
-      let label = el('label', name, { for: 'layer' + i });
+  _updateList() {
+    this._layerList.update(
+      Object.keys(this._layers).map((name) => {
+        return {
+          enabled: this._visible.includes(name),
+          name: name,
+        };
+      }),
+      this,
+    );
+  }
+}
 
-      checkbox.onchange = (e) => {
-        if ((<HTMLInputElement>e.target).checked) {
-          this._visible.push(name);
-        } else {
-          this._visible = this._visible.filter((item) => item !== name);
-        }
-        this._updateVisibility();
-      };
+class LayerSwitcherItem implements RedomComponent {
+  el: HTMLElement;
+  _checkbox: HTMLInputElement;
+  _label: HTMLElement;
+  layerSwitcher: LayerSwitcher | undefined;
 
-      let li = el('li', [label, checkbox]);
-      list.appendChild(li);
-      i++;
+  constructor() {
+    this._checkbox = el('input', {
+      type: 'checkbox',
+    });
+    this._label = el('label');
+    this.el = el('li', [this._label, this._checkbox]);
+
+    this._checkbox.onchange = (e) => this.onChange(e);
+  }
+
+  onChange(e: Event) {
+    if (!this.layerSwitcher) return;
+
+    const name = this._label.innerText;
+
+    if ((<HTMLInputElement>e.target).checked) {
+      this.layerSwitcher._visible.push(name);
+    } else {
+      this.layerSwitcher._visible = this.layerSwitcher._visible.filter((item) => item !== name);
     }
-    this._container.appendChild(list);
+    this.layerSwitcher._updateVisibility();
+  }
+
+  update(data: any, index: number, items: any, context?: any) {
+    this.layerSwitcher = context;
+    let label_for = 'layerSwitch' + index;
+    this._checkbox.id = label_for;
+    this._label.setAttribute('for', label_for);
+
+    this._checkbox.checked = data.enabled;
+    this._label.innerText = data.name;
   }
 }
 

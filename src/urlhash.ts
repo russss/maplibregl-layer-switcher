@@ -5,11 +5,12 @@ export interface HashComponents {
   zoom?: number;
   center?: [number, number];
   layers?: string;
+  additional: Record<string, string>;
 }
 
 export function decodeHash(hash: string): HashComponents {
   const loc = hash.replace('#', '').split('/');
-  let result: HashComponents = {};
+  let result: HashComponents = { additional: {} };
   if (loc.length < 3) {
     return result;
   }
@@ -19,9 +20,10 @@ export function decodeHash(hash: string): HashComponents {
 
   for (let i = 3; i < loc.length; i++) {
     let component = loc[i];
-    let matches = component.match(/([a-z])=(.*)/);
+    let matches = component.match(/^(\w+)=(.*)$/);
     if (matches) {
-      // TODO: handle additional components
+      result.additional = result.additional || {};
+      result.additional[matches[1]] = matches[2];
     } else {
       result.layers = component;
     }
@@ -50,20 +52,34 @@ export function encodeHash(components: HashComponents): string {
     hash += '/' + components.layers;
   }
 
+  if (components.additional) {
+    for (let key in components.additional) {
+      hash += '/' + key + '=' + components.additional[key];
+    }
+  }
+
   return hash;
 }
+
+type ParameterCallbackFunction = (value: string | null) => void;
 
 class URLHash {
   layerSwitcher: LayerSwitcher;
   _map: maplibregl.Map | undefined;
+  additional: Record<string, string>;
+  handlers: Record<string, ParameterCallbackFunction>;
 
   constructor(layerSwitcher: LayerSwitcher) {
     this.layerSwitcher = layerSwitcher;
-    this._onHashChange();
+    this.additional = {};
+    this.handlers = {};
   }
 
   enable(map: maplibregl.Map) {
     this._map = map;
+
+    this._onHashChange(window.location.hash);
+
     map.on('moveend', () => {
       this._updateHash();
     });
@@ -71,16 +87,65 @@ class URLHash {
     window.addEventListener(
       'hashchange',
       () => {
-        this._onHashChange();
+        this._onHashChange(window.location.hash);
       },
       false,
     );
   }
 
-  _onHashChange() {
-    const hash = decodeHash(window.location.hash);
+  /**
+   * Register a handler for a URL hash parameter. The key will be included in
+   * the URL hash, so keep it as short as possible.
+   *
+   * @param key short key used to identify the parameter in the URL hash
+   * @param handler handler function that will be called when the parameter changes
+   */
+  registerHandler(key: string, handler: ParameterCallbackFunction) {
+    this.handlers[key] = handler;
+  }
 
-    if (hash.center && hash.zoom && this._map) {
+  /**
+   * Set a custom URL hash parameter. Use `registerHandler` to receive a notification
+   * when the parameter changes.
+   *
+   * @param key short key used to identify the parameter in the URL hash
+   * @param value the value of the parameter, or null to remove it.
+   */
+  setParameter(key: string, value: string | null) {
+    if (this.additional[key] !== value) {
+      if (value === null) {
+        delete this.additional[key];
+      } else {
+        this.additional[key] = value;
+      }
+      this._updateHash();
+    }
+  }
+
+  _fireParameterChange(key: string, value: string | null) {
+    if (this.handlers[key]) {
+      this.handlers[key](value);
+    }
+  }
+
+  _onHashChange(new_hash: string) {
+    const hash = decodeHash(new_hash);
+
+    // Check for changes in the additional parameters and fire callbacks.
+    // We need to do this first as calling jumpTo generates an _updateHash event
+    // which will lose our additional parameters.
+    let parameter_keys = [...Object.keys(hash.additional), ...Object.keys(this.additional)];
+    for (let key of parameter_keys) {
+      if (this.additional[key] && !hash.additional[key]) {
+        delete this.additional[key];
+        this._fireParameterChange(key, null);
+      } else if (hash.additional[key] && this.additional[key] !== hash.additional[key]) {
+        this.additional[key] = hash.additional[key];
+        this._fireParameterChange(key, hash.additional[key]);
+      }
+    }
+
+    if (this._map?.isStyleLoaded() && hash.center && hash.zoom) {
       this._map.jumpTo({
         center: hash.center,
         zoom: hash.zoom,
@@ -93,8 +158,9 @@ class URLHash {
   }
 
   _updateHash() {
+    const newHash = this.getHashString();
     try {
-      window.history.replaceState(window.history.state, '', this.getHashString());
+      window.history.replaceState(window.history.state, '', newHash);
     } catch (e) {
       console.log(e);
     }
@@ -109,6 +175,7 @@ class URLHash {
     const components: HashComponents = {
       center: [lng, lat],
       zoom: this._map.getZoom(),
+      additional: this.additional,
     };
 
     if (this.layerSwitcher) {
