@@ -1,3 +1,5 @@
 src
 node_modules
 tsconfig.json
+jest.config.js
+__mocks__
