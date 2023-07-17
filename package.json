@@ -1,10 +1,10 @@
 {
   "name": "@russss/maplibregl-layer-switcher",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Layer switcher for Maplibre GL JS based on layer prefixes",
   "exports": {
-    ".": "src/index.ts",
-    "./urlhash": "src/urlhash.ts"
+    ".": "src/index.js",
+    "./urlhash": "src/urlhash.js"
   },
   "scripts": {
     "build": "npx tsc && cp src/layerswitcher.css lib/",
