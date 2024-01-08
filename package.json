@@ -1,13 +1,14 @@
 {
   "name": "@russss/maplibregl-layer-switcher",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Layer switcher for Maplibre GL JS based on layer prefixes",
   "exports": {
-    ".": "lib/index.js",
-    "./urlhash": "lib/urlhash.js"
+    ".": "./lib/index.js",
+    "./urlhash": "./lib/urlhash.js"
   },
+  "types": "./lib/index.d.ts",
   "scripts": {
-    "build": "npx tsc && cp src/layerswitcher.css lib/",
+    "build": "tsc && cp src/layerswitcher.css lib/",
     "test": "jest"
   },
   "author": "Russ Garrett",
@@ -26,6 +27,6 @@
     "maplibre-gl": "^3.1.0",
     "prettier": "^3.0.0",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.3.3"
   }
 }
