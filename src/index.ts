@@ -182,7 +182,7 @@ class LayerSwitcherItem implements RedomComponent {
       type: 'checkbox',
     });
     this._label = el('label');
-    this.el = el('li', [this._label, this._checkbox]);
+    this.el = el('li', this._label);
 
     this._checkbox.onchange = (e) => this.onChange(e);
   }
@@ -208,6 +208,7 @@ class LayerSwitcherItem implements RedomComponent {
 
     this._checkbox.checked = data.enabled;
     this._label.innerText = data.name;
+    mount(this._label, this._checkbox);
   }
 }
 
