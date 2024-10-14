@@ -1,7 +1,7 @@
 src
 node_modules
 tsconfig.json
-jest.config.js
+jest.config.ts
 vite.config.ts
 index.html
 index.ts
