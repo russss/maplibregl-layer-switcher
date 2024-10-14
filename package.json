@@ -4,8 +4,7 @@
   "type": "module",
   "description": "Layer switcher for Maplibre GL JS based on layer prefixes",
   "exports": {
-    ".": "./lib/index.js",
-    "./urlhash": "./lib/urlhash.js"
+    ".": "./lib/index.js"
   },
   "types": "./lib/index.d.ts",
   "scripts": {
@@ -15,20 +14,18 @@
   "author": "Russ Garrett",
   "license": "ISC",
   "dependencies": {
-    "lodash.invert": "^4.3.0",
     "lodash.isequal": "^4.5.0",
-    "redom": "^3.24.2",
-    "vite": "^5.4.8"
+    "redom": "^3.24.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.3",
-    "@types/lodash.invert": "^4.3.7",
     "@types/lodash.isequal": "^4.5.6",
     "jest": "^29.6.1",
     "jest-environment-jsdom": "^29.6.1",
     "maplibre-gl": "^4.7.1",
     "prettier": "^3.3.3",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vite": "^5.4.8"
   }
 }

@@ -63,6 +63,9 @@ export function encodeHash(components: HashComponents): string {
 
 type ParameterCallbackFunction = (value: string | null) => void
 
+/**
+ * Object to manage the URL hash for a Maplibre GL JS map.
+ */
 class URLHash {
   layerSwitcher: LayerSwitcher
   _map: maplibregl.Map | undefined
@@ -189,7 +192,7 @@ class URLHash {
    * Modify MapLibre GL map constructor options to include values from the URL hash.
    *
    * @param options the original options passed to the MapLibre GL `Map` constructor.
-   *      You should include defaults for the `center` and `zoom` parameters.
+   *      You can include defaults for the `center` and `zoom` parameters.
    * @returns an options object to be passed to the `Map` constructor, with the
    *      `center` and `zoom` parameters updated if necessary. Other options are untouched.
    */

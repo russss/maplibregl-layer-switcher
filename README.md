@@ -18,18 +18,21 @@ import { LayerSwitcher } from '@russss/maplibregl-layer-switcher'
 
 Assuming you are using a build system which supports CSS imports, the CSS should be imported automatically.
 
-Now define your layers as an object mapping the layer name to the prefix of the Mapbox GL layers you
-want to switch. We also define a list of layers which will be initially enabled:
+Now define your layers. Each layer has a short identifier which will be used in the URL hash,
+a prefix for the style layers to match, and a boolean for whether it's enabled by default:
 
 ```javascript
-const layers = {
-  Power: 'power_',
-  'Solar Generation': 'heatmap_',
-  Labels: 'place_'
-}
-
 const layers_enabled = ['Power', 'Labels']
-const layer_switcher = new LayerSwitcher(layers, layers_enabled)
+const layer_switcher = new LayerSwitcher([
+  new LayerGroup('Artificial', [
+    new Layer('b', 'Borders', 'boundary'),
+    new Layer('l', 'Landuse', 'landuse_', true),
+    new Layer('r', 'Roads', 'road_', true),
+    new Layer('B', 'Buildings', 'building', true)
+  ]),
+  new LayerGroup('Natural', [new Layer('w', 'Water', 'water', true)]),
+  new Layer('L', 'Labels', 'label', true)
+])
 ```
 
 Adding the layer switcher to the map after it's been initialised will result in the hidden layers being briefly
@@ -44,7 +47,7 @@ Now we can instantiate our map and add the layer switcher to it:
 
 ```javascript
 const map = new maplibregl.Map({ style: style, container: 'map' })
-map.addControl(layer_switcher, 'top-right')
+map.addControl(layer_switcher)
 ```
 
 ## URL Hash
@@ -75,3 +78,8 @@ url_hash.enable(map)
 ```
 
 The URLHash object doesn't currently support tilt and rotation parameters.
+
+## Development
+
+Vite can be used to test the library (using index.html and index.ts in the root directory) but isn't
+used to build the published version.

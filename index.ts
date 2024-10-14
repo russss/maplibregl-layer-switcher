@@ -1,14 +1,17 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { LayerSwitcher, Layer, URLHash } from './src'
+import { LayerSwitcher, Layer, URLHash, LayerGroup } from './src'
 import './src/layerswitcher.css'
 
 const layers = [
-  new Layer('b', 'Borders', 'boundary'),
-  new Layer('l', 'Landuse', 'landuse_', true),
-  new Layer('r', 'Roads', 'road_', true),
-  new Layer('B', 'Buildings', 'building', true),
-  new Layer('w', 'Water', 'water', true)
+  new LayerGroup('Artificial', [
+    new Layer('b', 'Borders', 'boundary'),
+    new Layer('l', 'Landuse', 'landuse_', true),
+    new Layer('r', 'Roads', 'road_', true),
+    new Layer('B', 'Buildings', 'building', true)
+  ]),
+  new LayerGroup('Natural', [new Layer('w', 'Water', 'water', true)]),
+  new Layer('L', 'Labels', 'label', true)
 ]
 
 const layerSwitcher = new LayerSwitcher(layers)

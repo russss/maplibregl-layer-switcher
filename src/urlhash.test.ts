@@ -34,7 +34,7 @@ test('Test hash encoding round trip', () => {
 })
 
 test('test URLHash class', () => {
-  let layer_switcher = new LayerSwitcher({}, [])
+  let layer_switcher = new LayerSwitcher([])
   let url_hash = new URLHash(layer_switcher)
 
   let returned_value = null

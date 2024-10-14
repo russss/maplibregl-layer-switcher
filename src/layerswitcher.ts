@@ -1,33 +1,58 @@
-import { list, List, RedomComponent, el, mount } from 'redom'
+import { el, mount } from 'redom'
 import isEqual from 'lodash.isequal'
 import './layerswitcher.css'
 import URLHash from './urlhash'
-import { Layer } from './data'
+import { Layer, LayerGroup } from './data'
 import type maplibregl from 'maplibre-gl'
 
+/**
+ * A layer switcher control for MapLibre GL JS.
+ */
 class LayerSwitcher implements maplibregl.IControl {
-  _layers: Record<string, Layer>
+  _layers: (Layer | LayerGroup)[]
+  _layerIndex: Record<string, Layer>
   _container: HTMLElement
   _visible: string[]
   _default_visible: string[]
-  _layerList: List
+  _layerList: HTMLElement
   _map: maplibregl.Map | undefined
   urlhash: URLHash | undefined
 
-  constructor(layers: Layer[], title: string = 'Layers') {
-    this._layers = {}
-    for (let layer of layers) {
-      if (this._layers[layer.id]) {
+  /**
+   * A layer switcher control for MapLibre GL JS.
+   *
+   * @param layers a list of `Layer` or `LayerGroup` objects.
+   * @param title the title of the layer switcher (default "Layers").
+   */
+  constructor(layers: (Layer | LayerGroup)[], title: string = 'Layers') {
+    this._layers = layers
+    this._layerIndex = {}
+    for (let layer of this.getLayers()) {
+      if (this._layerIndex[layer.id]) {
         throw new Error(`Duplicate layer ID "${layer.id}". Layer IDs must be unique.`)
       }
-      this._layers[layer.id] = layer
+      this._layerIndex[layer.id] = layer
     }
 
-    this._visible = this._default_visible = layers.filter((layer) => layer.enabled).map((layer) => layer.id)
+    this._visible = this._default_visible = Object.values(this._layerIndex)
+      .filter((layer) => layer.enabled)
+      .map((layer) => layer.id)
 
-    this._layerList = list('ul', LayerSwitcherItem, 'name')
+    this._layerList = el('ul')
     this._container = el('div', [el('h3', title), this._layerList], { class: 'layer-switcher-list' })
     mount(document.body, this._container)
+  }
+
+  getLayers(): Layer[] {
+    const layers: Layer[] = []
+    for (let layer of this._layers) {
+      if (layer instanceof LayerGroup) {
+        layers.push(...layer.layers)
+      } else if (layer instanceof Layer) {
+        layers.push(layer)
+      }
+    }
+    return layers
   }
 
   setVisibility(layerId: string, visible: boolean) {
@@ -50,8 +75,8 @@ class LayerSwitcher implements maplibregl.IControl {
     var layers = this._map.getStyle().layers
     for (let layer of layers) {
       let name = layer['id']
-      for (let layer_name in this._layers) {
-        let pref = this._layers[layer_name].prefix
+      for (let layer_name in this._layerIndex) {
+        let pref = this._layerIndex[layer_name].prefix
         if (name.startsWith(pref)) {
           if (this._visible.includes(layer_name)) {
             this._map.setLayoutProperty(name, 'visibility', 'visible')
@@ -74,8 +99,8 @@ class LayerSwitcher implements maplibregl.IControl {
    */
   setInitialVisibility(style: maplibregl.StyleSpecification) {
     for (let layer of style['layers']) {
-      for (let layer_name in this._layers) {
-        let pref = this._layers[layer_name].prefix
+      for (let layer_name in this._layerIndex) {
+        let pref = this._layerIndex[layer_name].prefix
         if (layer['id'].startsWith(pref) && !this._visible.includes(layer['id'])) {
           if (!layer['layout']) {
             layer['layout'] = {}
@@ -100,7 +125,7 @@ class LayerSwitcher implements maplibregl.IControl {
       if (ids.length == 0) {
         this._visible = [...this._default_visible]
       } else {
-        this._visible = ids.filter((id) => this._layers[id]).map((id) => id)
+        this._visible = ids.filter((id) => this._layerIndex[id]).map((id) => id)
       }
     } else {
       this._visible = [...this._default_visible]
@@ -133,10 +158,10 @@ class LayerSwitcher implements maplibregl.IControl {
       var button_position = button.getBoundingClientRect()
       this._container.style.top = button_position.top + 'px'
       this._container.style.right = document.documentElement.clientWidth - button_position.right + 'px'
-      this._container.style.display = 'block'
+      this._container.classList.add('visible')
     }
     this._container.onmouseleave = () => {
-      this._container.style.display = 'none'
+      this._container.classList.remove('visible')
     }
 
     return el('div', button, {
@@ -149,55 +174,32 @@ class LayerSwitcher implements maplibregl.IControl {
     this._map = undefined
   }
 
-  _updateList() {
-    this._layerList.update(
-      Object.keys(this._layers).map((id) => {
-        const layer = this._layers[id]
-        return {
-          enabled: this._visible.includes(id),
-          name: layer.title,
-          id: id
+  _getLayerElement(item: Layer | LayerGroup): Node {
+    if (item instanceof Layer) {
+      const checkbox = el('input', {
+        type: 'checkbox',
+        checked: item.enabled,
+        onchange: (e: Event) => {
+          this.setVisibility(item.id, (<HTMLInputElement>e.target).checked)
         }
-      }),
-      this
-    )
-  }
-}
-
-class LayerSwitcherItem implements RedomComponent {
-  el: HTMLElement
-  _checkbox: HTMLInputElement
-  _label: HTMLElement
-  layerSwitcher: LayerSwitcher | undefined
-  id?: string
-
-  constructor() {
-    this._checkbox = el('input', {
-      type: 'checkbox'
-    })
-    this._label = el('label')
-    this.el = el('li', this._label)
-
-    this._checkbox.onchange = (e) => this.onChange(e)
+      })
+      const label = el('label', item.title, checkbox)
+      return el('li', label)
+    } else if (item instanceof LayerGroup) {
+      return el('li.layer-switcher-group', [
+        el('h4', item.title),
+        el(
+          'ul',
+          item.layers.map((layer) => this._getLayerElement(layer))
+        )
+      ])
+    } else {
+      throw new Error('Unknown item type: ' + item)
+    }
   }
 
-  onChange(e: Event) {
-    if (!this.layerSwitcher) return
-
-    this.layerSwitcher.setVisibility(this.id!, (<HTMLInputElement>e.target).checked)
-  }
-
-  update(data: any, index: number, items: any, context?: any) {
-    this.id = data.id
-    this.layerSwitcher = context
-
-    const label_for = 'layerSwitch' + data.id
-    this._checkbox.id = label_for
-    this._label.setAttribute('for', label_for)
-
-    this._checkbox.checked = data.enabled
-    this._label.innerText = data.name
-    mount(this._label, this._checkbox)
+  _updateList() {
+    this._layerList.replaceChildren(...this._layers.map((item) => this._getLayerElement(item)))
   }
 }
 

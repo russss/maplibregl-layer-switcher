@@ -2,4 +2,7 @@ src
 node_modules
 tsconfig.json
 jest.config.js
+vite.config.ts
+index.html
+index.ts
 __mocks__
