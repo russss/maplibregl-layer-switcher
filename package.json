@@ -13,6 +13,10 @@
   },
   "author": "Russ Garrett",
   "license": "ISC",
+  "repository": {
+    "url": "https://github.com/russss/maplibregl-layer-switcher",
+    "type": "git"
+  },
   "dependencies": {
     "lodash.isequal": "^4.5.0",
     "redom": "^3.24.2"
