@@ -178,7 +178,7 @@ class LayerSwitcher implements maplibregl.IControl {
     if (item instanceof Layer) {
       const checkbox = el('input', {
         type: 'checkbox',
-        checked: item.enabled,
+        checked: this._visible.includes(item.id),
         onchange: (e: Event) => {
           this.setVisibility(item.id, (<HTMLInputElement>e.target).checked)
         }
