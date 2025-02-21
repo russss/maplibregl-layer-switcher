@@ -72,7 +72,6 @@
 .layer-switcher-list li.layer-switcher-group {
   display: flex;
   flex-direction: column;
-  padding-left: 2px;
 }
 
 .layer-switcher-list input {
