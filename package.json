@@ -8,10 +8,14 @@
   },
   "types": "./lib/index.d.ts",
   "scripts": {
+    "start": "vite",
     "build": "tsc && cp src/layerswitcher.css lib/",
     "test": "jest"
   },
   "author": "Russ Garrett",
+  "contributors": [
+    "Albert Willemsen"
+  ],
   "license": "ISC",
   "repository": {
     "url": "https://github.com/russss/maplibregl-layer-switcher",

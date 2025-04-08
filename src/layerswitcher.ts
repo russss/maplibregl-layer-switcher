@@ -1,4 +1,4 @@
-import { el, mount } from 'redom'
+import { el, mount, unmount } from 'redom'
 import isEqual from 'lodash.isequal'
 import './layerswitcher.css'
 import URLHash from './urlhash'
@@ -155,10 +155,13 @@ class LayerSwitcher implements maplibregl.IControl {
       'aria-label': 'Layer Switcher'
     })
     button.onmouseover = () => {
-      var button_position = button.getBoundingClientRect()
-      this._container.style.top = button_position.top + 'px'
-      this._container.style.right = document.documentElement.clientWidth - button_position.right + 'px'
       this._container.classList.add('visible')
+
+      var button_bounds = button.getBoundingClientRect()
+      var container_bounds = this._container.getBoundingClientRect();
+
+      this._container.style.top = window.pageYOffset + button_bounds.top + 'px'
+      this._container.style.left = window.pageXOffset + button_bounds.right - container_bounds.width + 'px'
     }
     this._container.onmouseleave = () => {
       this._container.classList.remove('visible')
@@ -170,9 +173,11 @@ class LayerSwitcher implements maplibregl.IControl {
   }
 
   onRemove() {
-    this._container.parentNode?.removeChild(this._container)
+    unmount(document.body, this._container)
     this._map = undefined
   }
+
+  getDefaultPosition = (): maplibregl.ControlPosition => "top-right";
 
   _getLayerElement(item: Layer | LayerGroup): Node {
     if (item instanceof Layer) {
