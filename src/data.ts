@@ -30,17 +30,24 @@ export class Layer {
 export class LayerGroup {
   layers: Layer[]
   title: string
-  id: string
+  isMultiSelect?: boolean
+  id?: string
 
   /**
    * A group of layers shown in the layer switcher.
    *
    * @param title name of the group to be shown.
    * @param layers list of layers in the group.
+   * @param isMultiSelect use radio buttons instead of checkboxes when set to false. Will use layer switcher
+   *                       isMultiSelect if left empty.
+   * @param id this is needed to use radioboxes. Will use layer switcher id if left empty.
    */
-  constructor(title: string, layers: Layer[]) {
+  constructor(title: string, layers: Layer[])
+  constructor(title: string, layers: Layer[], isMultiSelect: false, id?: string)
+  constructor(title: string, layers: Layer[], isMultiSelect?: boolean, id?: string) {
     this.title = title
-    this.id = title
     this.layers = layers
+    this.isMultiSelect = isMultiSelect
+    this.id = id
   }
 }

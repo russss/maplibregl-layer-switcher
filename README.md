@@ -35,6 +35,32 @@ const layer_switcher = new LayerSwitcher([
 ])
 ```
 
+It is also possible to define groups of radio buttons. The last two arguments of the layer switcher and group
+determine if checkboxes or radio buttons will be used, the default set to true is checkboxes. The last
+argument is the group id which is used to group the radio buttons.
+
+```javascript
+const layers_enabled = ['Power', 'Labels']
+const layer_switcher = new LayerSwitcher([
+  new Layer('str', 'Streets', 'streets'),
+  new LayerGroup('Satelite', [
+    new Layer('srgb', 'RGB', 'sat-rgb')
+    new Layer('sir', 'IR', 'sat-ir', true)
+  ], false, 'backgrounds'), // Radio button 'backgrounds' group
+  new LayerGroup('Artificial', [
+    new Layer('b', 'Borders', 'boundary'),
+    new Layer('l', 'Landuse', 'landuse_', true),
+    new Layer('r', 'Roads', 'road_', true),
+    new Layer('B', 'Buildings', 'building', true)
+  ], true), // Checkbox group
+  new LayerGroup('Natural', [
+    new Layer('w', 'Water', 'water', true)
+    new Layer('t', 'Trees', 'trees', true)
+  ], false, 'natural'), // Radio button 'natural' group
+], false, 'backgrounds') // Radio button 'backgrounds' group
+```
+
+
 Adding the layer switcher to the map after it's been initialised will result in the hidden layers being briefly
 shown. To avoid this, we need to load the style into JS first (I usually bundle it with the rest of my JS), and
 call the `setInitialVisibility` method on the loaded style object.
