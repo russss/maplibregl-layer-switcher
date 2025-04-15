@@ -209,7 +209,7 @@ class LayerSwitcher implements maplibregl.IControl {
           type: 'radio',
           name: id,
           value: item.id,
-          checked: this._visible.includes(item.id),
+          checked: this._visible.includes(item.id) ? 'checked' : undefined,
           onchange: (e: Event) => {
             const radios = this._container.querySelectorAll<HTMLInputElement>(`input[name=${id}]`)
             for (const radio of Array.from(radios)) {

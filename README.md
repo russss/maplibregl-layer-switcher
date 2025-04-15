@@ -54,7 +54,7 @@ const layer_switcher = new LayerSwitcher([
     new Layer('B', 'Buildings', 'building', true)
   ], true), // Checkbox group
   new LayerGroup('Natural', [
-    new Layer('w', 'Water', 'water', true)
+    new Layer('w', 'Water', 'water')
     new Layer('t', 'Trees', 'trees', true)
   ], false, 'natural'), // Radio button 'natural' group
 ], false, 'backgrounds') // Radio button 'backgrounds' group
