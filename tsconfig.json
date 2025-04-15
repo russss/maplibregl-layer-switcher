@@ -7,9 +7,13 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "outDir": "lib",
+    "lib": [
+      "dom",
+      "es2017"
+    ],
     "moduleResolution": "node",
-		"declaration": true,
-		"declarationMap": true
+    "declaration": true,
+    "declarationMap": true
   },
   "include": [
     "src"

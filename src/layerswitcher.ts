@@ -181,14 +181,34 @@ class LayerSwitcher implements maplibregl.IControl {
 
   _getLayerElement(item: Layer | LayerGroup): Node {
     if (item instanceof Layer) {
-      const checkbox = el('input', {
-        type: 'checkbox',
-        checked: this._visible.includes(item.id),
-        onchange: (e: Event) => {
-          this.setVisibility(item.id, (<HTMLInputElement>e.target).checked)
-        }
-      })
-      const label = el('label', item.title, checkbox)
+      let input: HTMLInputElement;
+      if (item.groupId) {
+        input = el('input', {
+          type: 'radio',
+          name: item.groupId,
+          value: item.id,
+          checked: this._visible.includes(item.id) ? 'checked' : undefined,
+          onchange: (e: Event) => {
+            const radios = this._container.querySelectorAll<HTMLInputElement>(`input[name=${item.groupId}]`)
+            for (const radio of Array.from(radios)) {
+              this.setVisibility(radio.value, false)
+            }
+            const selected = this._container.querySelector<HTMLInputElement>(`input[name=${item.groupId}]:checked`)
+            if (selected) {
+              this.setVisibility(selected.value, true)
+            }
+          }
+        })
+      } else {
+        input = el('input', {
+          type: 'checkbox',
+          checked: this._visible.includes(item.id),
+          onchange: (e: Event) => {
+            this.setVisibility(item.id, (<HTMLInputElement>e.target).checked)
+          }
+        })
+      }
+      const label = el('label', item.title, input)
       return el('li', label)
     } else if (item instanceof LayerGroup) {
       return el('li.layer-switcher-group', [
