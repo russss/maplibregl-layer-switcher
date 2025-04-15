@@ -57,7 +57,7 @@ const layer_switcher = new LayerSwitcher([
     new Layer('w', 'Water', 'water')
     new Layer('t', 'Trees', 'trees', true)
   ], false, 'natural'), // Radio button 'natural' group
-], false, 'backgrounds') // Radio button 'backgrounds' group
+], 'Layers', false, 'backgrounds') // Radio button 'backgrounds' group
 ```
 
 
