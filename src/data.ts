@@ -43,6 +43,7 @@ export class LayerGroup {
    * @param id this is needed to use radioboxes. Will use layer switcher id if left empty.
    */
   constructor(title: string, layers: Layer[])
+  constructor(title: string, layers: Layer[], isMultiSelect: true)
   constructor(title: string, layers: Layer[], isMultiSelect: false, id?: string)
   constructor(title: string, layers: Layer[], isMultiSelect?: boolean, id?: string) {
     this.title = title

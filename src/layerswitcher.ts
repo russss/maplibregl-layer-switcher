@@ -30,6 +30,7 @@ class LayerSwitcher implements maplibregl.IControl {
    */
   constructor(layers: (Layer | LayerGroup)[])
   constructor(layers: (Layer | LayerGroup)[], title: string)
+  constructor(layers: (Layer | LayerGroup)[], title: string, isMultiSelect: true)
   constructor(layers: (Layer | LayerGroup)[], title: string, isMultiSelect: false, id?: string)
   constructor(layers: (Layer | LayerGroup)[], title: string = 'Layers', isMultiSelect = true, id: string = title) {
     if (!isMultiSelect && !id) throw new Error('Layer switcher ID must be specified when not multi select.')
