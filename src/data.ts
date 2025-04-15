@@ -5,6 +5,7 @@ export class Layer {
   id: string
   prefix: string
   title: string
+  groupId?: string;
   enabled: boolean = false
 
   /**
@@ -14,13 +15,22 @@ export class Layer {
    *            as possible. Must be unique among all layers, or an error will be thrown.
    * @param title name of the layer as shown in the layer switcher.
    * @param prefix prefix of the layer in the map style to match.
+   * @param groupId when group id is set the layer will be part of a radio button group.
    * @param enabled whether the layer is enabled by default.
    */
-  constructor(id: string, title: string, prefix: string, enabled = false) {
+  constructor(id: string, title: string, prefix: string, enabled?: boolean)
+  constructor(id: string, title: string, prefix: string, groupId: string, enabled?: boolean)
+  constructor(id: string, title: string, prefix: string, groupIdOrEnabled: string | boolean = false, enabled = false) {
     this.id = id
-    this.prefix = prefix
     this.title = title
-    this.enabled = enabled
+    this.prefix = prefix
+    if (typeof groupIdOrEnabled === 'string') {
+      this.groupId = groupIdOrEnabled
+      this.enabled = enabled
+    }
+    else {
+      this.enabled = groupIdOrEnabled
+    }
   }
 }
 
@@ -30,25 +40,15 @@ export class Layer {
 export class LayerGroup {
   layers: Layer[]
   title: string
-  isMultiSelect?: boolean
-  id?: string
 
   /**
    * A group of layers shown in the layer switcher.
    *
    * @param title name of the group to be shown.
    * @param layers list of layers in the group.
-   * @param isMultiSelect use radio buttons instead of checkboxes when set to false. Will use layer switcher
-   *                       isMultiSelect if left empty.
-   * @param id this is needed to use radioboxes. Will use layer switcher id if left empty.
    */
-  constructor(title: string, layers: Layer[])
-  constructor(title: string, layers: Layer[], isMultiSelect: true)
-  constructor(title: string, layers: Layer[], isMultiSelect: false, id?: string)
-  constructor(title: string, layers: Layer[], isMultiSelect?: boolean, id?: string) {
+  constructor(title: string, layers: Layer[]) {
     this.title = title
     this.layers = layers
-    this.isMultiSelect = isMultiSelect
-    this.id = id
   }
 }

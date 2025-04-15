@@ -11,8 +11,6 @@ import type maplibregl from 'maplibre-gl'
 class LayerSwitcher implements maplibregl.IControl {
   _layers: (Layer | LayerGroup)[]
   _layerIndex: Record<string, Layer>
-  _id: string
-  _isMultiSelect: boolean
   _container: HTMLElement
   _visible: string[]
   _default_visible: string[]
@@ -25,20 +23,10 @@ class LayerSwitcher implements maplibregl.IControl {
    *
    * @param layers a list of `Layer` or `LayerGroup` objects.
    * @param title the title of the layer switcher (default "Layers").
-   * @param isMultiSelect use checkboxes or radio buttons (default checkboxes).
-   * @param id this is needed to use radioboxes.
    */
-  constructor(layers: (Layer | LayerGroup)[])
-  constructor(layers: (Layer | LayerGroup)[], title: string)
-  constructor(layers: (Layer | LayerGroup)[], title: string, isMultiSelect: true)
-  constructor(layers: (Layer | LayerGroup)[], title: string, isMultiSelect: false, id?: string)
-  constructor(layers: (Layer | LayerGroup)[], title: string = 'Layers', isMultiSelect = true, id: string = title) {
-    if (!isMultiSelect && !id) throw new Error('Layer switcher ID must be specified when not multi select.')
-
+  constructor(layers: (Layer | LayerGroup)[], title: string = 'Layers') {
     this._layers = layers
     this._layerIndex = {}
-    this._id = id
-    this._isMultiSelect = isMultiSelect;
     for (let layer of this.getLayers()) {
       if (this._layerIndex[layer.id]) {
         throw new Error(`Duplicate layer ID "${layer.id}". Layer IDs must be unique.`)
@@ -191,35 +179,32 @@ class LayerSwitcher implements maplibregl.IControl {
 
   getDefaultPosition = (): maplibregl.ControlPosition => "top-right";
 
-  _getLayerElement(item: Layer | LayerGroup, id?: string, isMultiSelect?: boolean): Node {
+  _getLayerElement(item: Layer | LayerGroup): Node {
     if (item instanceof Layer) {
       let input: HTMLInputElement;
-      if (isMultiSelect) {
+      if (item.groupId) {
+        input = el('input', {
+          type: 'radio',
+          name: item.groupId,
+          value: item.id,
+          checked: this._visible.includes(item.id) ? 'checked' : undefined,
+          onchange: (e: Event) => {
+            const radios = this._container.querySelectorAll<HTMLInputElement>(`input[name=${item.groupId}]`)
+            for (const radio of Array.from(radios)) {
+              this.setVisibility(radio.value, false)
+            }
+            const selected = this._container.querySelector<HTMLInputElement>(`input[name=${item.groupId}]:checked`)
+            if (selected) {
+              this.setVisibility(selected.value, true)
+            }
+          }
+        })
+      } else {
         input = el('input', {
           type: 'checkbox',
           checked: this._visible.includes(item.id),
           onchange: (e: Event) => {
             this.setVisibility(item.id, (<HTMLInputElement>e.target).checked)
-          }
-        })
-      } else {
-        if (!id) {
-          throw new Error('Group ID must be specified when group is not multi select for item: ' + item)
-        }
-        input = el('input', {
-          type: 'radio',
-          name: id,
-          value: item.id,
-          checked: this._visible.includes(item.id) ? 'checked' : undefined,
-          onchange: (e: Event) => {
-            const radios = this._container.querySelectorAll<HTMLInputElement>(`input[name=${id}]`)
-            for (const radio of Array.from(radios)) {
-              this.setVisibility(radio.value, false)
-            }
-            const selected = this._container.querySelector<HTMLInputElement>(`input[name=${id}]:checked`)
-            if (selected) {
-              this.setVisibility(selected.value, true)
-            }
           }
         })
       }
@@ -230,7 +215,7 @@ class LayerSwitcher implements maplibregl.IControl {
         el('h4', item.title),
         el(
           'ul',
-          item.layers.map((layer) => this._getLayerElement(layer, item.id ?? this._id, item.isMultiSelect ?? this._isMultiSelect))
+          item.layers.map((layer) => this._getLayerElement(layer))
         )
       ])
     } else {
@@ -239,7 +224,7 @@ class LayerSwitcher implements maplibregl.IControl {
   }
 
   _updateList() {
-    this._layerList.replaceChildren(...this._layers.map((item) => this._getLayerElement(item, this._id, this._isMultiSelect)))
+    this._layerList.replaceChildren(...this._layers.map((item) => this._getLayerElement(item)))
   }
 }
 

@@ -22,7 +22,6 @@ Now define your layers. Each layer has a short identifier which will be used in 
 a prefix for the style layers to match, and a boolean for whether it's enabled by default:
 
 ```javascript
-const layers_enabled = ['Power', 'Labels']
 const layer_switcher = new LayerSwitcher([
   new LayerGroup('Artificial', [
     new Layer('b', 'Borders', 'boundary'),
@@ -35,29 +34,28 @@ const layer_switcher = new LayerSwitcher([
 ])
 ```
 
-It is also possible to define groups of radio buttons. The last two arguments of the layer switcher and group
-determine if checkboxes or radio buttons will be used, the default set to true is checkboxes. The last
-argument is the group id which is used to group the radio buttons.
+It is also possible to define groups of radio buttons. If you fill in a group id after the prefix parameter
+this layer will be part of that radio button group. Set the last parameter as enabled for one layer in a radio
+button group.
 
 ```javascript
-const layers_enabled = ['Power', 'Labels']
 const layer_switcher = new LayerSwitcher([
-  new Layer('str', 'Streets', 'streets'),
-  new LayerGroup('Satelite', [
-    new Layer('srgb', 'RGB', 'sat-rgb')
-    new Layer('sir', 'IR', 'sat-ir', true)
-  ], false, 'backgrounds'), // Radio button 'backgrounds' group
-  new LayerGroup('Artificial', [
+  new Layer('str', 'Streets', 'streets', 'backgrounds'), // Radio button 'backgrounds' group
+  new LayerGroup('Satelite', [ // Radio button 'backgrounds' group
+    new Layer('srgb', 'RGB', 'sat-rgb', 'backgrounds')
+    new Layer('sir', 'IR', 'sat-ir', 'backgrounds', true)
+  ]),
+  new LayerGroup('Artificial', [ // Checkbox group
     new Layer('b', 'Borders', 'boundary'),
     new Layer('l', 'Landuse', 'landuse_', true),
     new Layer('r', 'Roads', 'road_', true),
     new Layer('B', 'Buildings', 'building', true)
-  ], true), // Checkbox group
-  new LayerGroup('Natural', [
-    new Layer('w', 'Water', 'water')
-    new Layer('t', 'Trees', 'trees', true)
-  ], false, 'natural'), // Radio button 'natural' group
-], 'Layers', false, 'backgrounds') // Radio button 'backgrounds' group
+  ]),
+  new LayerGroup('Natural', [ // Radio button 'natural' group
+    new Layer('w', 'Water', 'water', 'natural')
+    new Layer('t', 'Trees', 'trees', 'natural', true)
+  ]),
+]) 
 ```
 
 
