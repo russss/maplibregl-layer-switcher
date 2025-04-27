@@ -41,7 +41,7 @@ button group.
 ```javascript
 const layer_switcher = new LayerSwitcher([
   new Layer('str', 'Streets', 'streets', 'backgrounds'), // Radio button 'backgrounds' group
-  new LayerGroup('Satelite', [ // Radio button 'backgrounds' group
+  new LayerGroup('Satellite', [ // Radio button 'backgrounds' group
     new Layer('srgb', 'RGB', 'sat-rgb', 'backgrounds')
     new Layer('sir', 'IR', 'sat-ir', 'backgrounds', true)
   ]),
@@ -55,9 +55,8 @@ const layer_switcher = new LayerSwitcher([
     new Layer('w', 'Water', 'water', 'natural')
     new Layer('t', 'Trees', 'trees', 'natural', true)
   ]),
-]) 
+])
 ```
-
 
 Adding the layer switcher to the map after it's been initialised will result in the hidden layers being briefly
 shown. To avoid this, we need to load the style into JS first (I usually bundle it with the rest of my JS), and
