@@ -22,7 +22,6 @@ Now define your layers. Each layer has a short identifier which will be used in 
 a prefix for the style layers to match, and a boolean for whether it's enabled by default:
 
 ```javascript
-const layers_enabled = ['Power', 'Labels']
 const layer_switcher = new LayerSwitcher([
   new LayerGroup('Artificial', [
     new Layer('b', 'Borders', 'boundary'),
@@ -32,6 +31,30 @@ const layer_switcher = new LayerSwitcher([
   ]),
   new LayerGroup('Natural', [new Layer('w', 'Water', 'water', true)]),
   new Layer('L', 'Labels', 'label', true)
+])
+```
+
+It is also possible to define groups of radio buttons. If you fill in a group id after the prefix parameter
+this layer will be part of that radio button group. Set the last parameter as enabled for one layer in a radio
+button group.
+
+```javascript
+const layer_switcher = new LayerSwitcher([
+  new Layer('str', 'Streets', 'streets', 'backgrounds'), // Radio button 'backgrounds' group
+  new LayerGroup('Satellite', [ // Radio button 'backgrounds' group
+    new Layer('srgb', 'RGB', 'sat-rgb', 'backgrounds')
+    new Layer('sir', 'IR', 'sat-ir', 'backgrounds', true)
+  ]),
+  new LayerGroup('Artificial', [ // Checkbox group
+    new Layer('b', 'Borders', 'boundary'),
+    new Layer('l', 'Landuse', 'landuse_', true),
+    new Layer('r', 'Roads', 'road_', true),
+    new Layer('B', 'Buildings', 'building', true)
+  ]),
+  new LayerGroup('Natural', [ // Radio button 'natural' group
+    new Layer('w', 'Water', 'water', 'natural')
+    new Layer('t', 'Trees', 'trees', 'natural', true)
+  ]),
 ])
 ```
 
