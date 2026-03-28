@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This repository has been migrated to Codeberg: [https://codeberg.org/russss/maplibregl-layer-switcher](https://codeberg.org/russss/maplibregl-layer-switcher)
+
 # MapLibre GL Layer Switcher
 
 This is a layer switcher component for MapLibre GL JS, which I use on [OpenInfraMap](https://openinframap.org).
